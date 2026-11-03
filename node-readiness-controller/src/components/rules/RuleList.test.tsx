@@ -4,13 +4,22 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import React from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import RuleList from './RuleList';
 
-const mockResourceListViewProps = vi.fn();
+const { mockResourceListViewProps, mockUseList } = vi.hoisted(() => ({
+  mockResourceListViewProps: vi.fn(),
+  mockUseList: vi.fn(),
+}));
 
 vi.mock('@kinvolk/headlamp-plugin/lib/lib/k8s/crd', () => ({
-  makeCustomResourceClass: vi.fn().mockReturnValue(class MockCRD {}),
+  makeCustomResourceClass: vi.fn().mockReturnValue(
+    class MockCRD {
+      static useList(...args: any[]) {
+        return mockUseList(...args);
+      }
+    }
+  ),
 }));
 
 vi.mock('@kinvolk/headlamp-plugin/lib/CommonComponents', () => ({
@@ -23,6 +32,12 @@ vi.mock('@kinvolk/headlamp-plugin/lib/CommonComponents', () => ({
     <span data-testid="status-label" data-status={status}>
       {children}
     </span>
+  ),
+  SectionBox: ({ title, children }: any) => (
+    <div data-testid="section-box">
+      <h2>{title}</h2>
+      {children}
+    </div>
   ),
   CreateResourceButton: ({ resourceClass }: any) => (
     <button data-testid="create-resource-button">Create</button>
@@ -38,6 +53,10 @@ vi.mock('@kinvolk/headlamp-plugin/lib/CommonComponents', () => ({
 }));
 
 describe('RuleList component', () => {
+  beforeEach(() => {
+    mockUseList.mockReturnValue([[], null]);
+  });
+
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
@@ -150,5 +169,26 @@ describe('RuleList component', () => {
     expect(enforcementCol.filterSelectOptions.some((o: any) => o.value === 'continuous')).toBe(
       true
     );
+  });
+
+  it('renders CrdNotInstalled state when CRD is not installed (404)', () => {
+    mockUseList.mockReturnValue([null, { status: 404 }]);
+    render(<RuleList />);
+    expect(screen.getByText('NodeReadinessRule CRD Not Installed')).toBeInTheDocument();
+    expect(
+      screen.getByText(/The CustomResourceDefinition for NodeReadinessRule is not installed/)
+    ).toBeInTheDocument();
+    expect(screen.getByText('View Installation Guide')).toBeInTheDocument();
+    expect(screen.queryByTestId('resource-list-view')).toBeNull();
+  });
+
+  it('renders permission denied state when rules access is forbidden (403)', () => {
+    mockUseList.mockReturnValue([null, { status: 403 }]);
+    render(<RuleList />);
+    expect(screen.getByText('Permission Denied: Cannot Access CRDs')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Your Kubernetes user or service account lacks read permissions/)
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('resource-list-view')).toBeNull();
   });
 });
