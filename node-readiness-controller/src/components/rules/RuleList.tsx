@@ -2,13 +2,20 @@ import {
   CreateResourceButton,
   Link,
   ResourceListView,
+  SectionBox,
   StatusLabel,
 } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box, Chip, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { NodeReadinessRule } from '../../resources';
 import { getRuleStats, getRuleStatusInfo, nrcRouteNames } from '../../utils';
-import { formatTaint, getNodeSelectorSummaryText, NodeSelectorSummary, TaintChip } from '../common';
+import {
+  CrdNotInstalled,
+  formatTaint,
+  getNodeSelectorSummaryText,
+  NodeSelectorSummary,
+  TaintChip,
+} from '../common';
 
 /**
  * Cluster-level list view component displaying all NodeReadinessRule custom resources.
@@ -18,10 +25,26 @@ import { formatTaint, getNodeSelectorSummaryText, NodeSelectorSummary, TaintChip
  * @returns Rendered JSX ResourceListView component.
  */
 export default function RuleList() {
+  const [rules, rulesError] = NodeReadinessRule.useList();
+
+  if (rulesError) {
+    const isForbidden = (rulesError as any)?.status === 403;
+    const isNotFound = (rulesError as any)?.status === 404;
+
+    if (isForbidden || isNotFound) {
+      return (
+        <SectionBox title="Node Readiness Rules">
+          <CrdNotInstalled isForbidden={isForbidden} resourceName="NodeReadinessRule" />
+        </SectionBox>
+      );
+    }
+  }
+
   return (
     <ResourceListView
       title="Node Readiness Rules"
-      resourceClass={NodeReadinessRule}
+      data={rules}
+      errorMessage={rulesError ? String(rulesError?.message || rulesError) : undefined}
       id="nrc-readiness-rules"
       headerProps={{
         titleSideActions: [
