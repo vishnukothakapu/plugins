@@ -6,6 +6,7 @@ import AttentionRuleCard from './AttentionRuleCard';
 
 interface AttentionRule {
   metadata: { name: string };
+  getName?: () => string;
   spec?: { dryRun?: boolean };
   status?: {
     failedNodes?: Array<{ nodeName: string; reason?: string }>;
@@ -37,7 +38,7 @@ export default function RulesAttentionSection({
 
   return (
     <Box mt={4}>
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+      <Typography variant="h6" component="h2" sx={{ fontWeight: 600, mb: 2 }}>
         Rules Requiring Attention
       </Typography>
 
@@ -96,16 +97,18 @@ export default function RulesAttentionSection({
             const isReconciling = gen !== undefined && (obsGen === undefined || obsGen < gen);
             const isPendingSync = gen !== undefined && obsGen === undefined;
 
+            const ruleName = rule.getName?.() ?? rule.metadata.name;
+
             return (
-              <Grid item xs={12} sm={6} md={4} key={rule.metadata.name} sx={{ display: 'flex' }}>
+              <Grid item xs={12} sm={6} md={4} key={ruleName} sx={{ display: 'flex' }}>
                 <AttentionRuleCard
-                  name={rule.metadata.name}
+                  name={ruleName}
                   isDryRun={rule.spec?.dryRun === true}
                   failedCount={failed.length}
                   taintsPresent={taintsPresent}
                   isReconciling={isReconciling}
                   isPendingSync={isPendingSync}
-                  onClick={() => onRuleClick(rule.metadata.name)}
+                  onClick={() => onRuleClick(ruleName)}
                 />
               </Grid>
             );

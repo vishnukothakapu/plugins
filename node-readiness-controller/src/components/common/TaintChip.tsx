@@ -45,6 +45,7 @@ export default function TaintChip({ taint }: TaintChipProps) {
       <Tooltip title={fullText}>
         <Typography
           tabIndex={0}
+          aria-label={`Taint: ${fullText}`}
           variant="body2"
           sx={{
             whiteSpace: 'nowrap',

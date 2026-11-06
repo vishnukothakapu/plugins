@@ -65,6 +65,7 @@ export default function NodeSelectorSummary({ selector }: NodeSelectorSummaryPro
       <Tooltip title={<pre style={{ margin: 0, fontSize: '0.75rem' }}>{tooltipText}</pre>}>
         <Typography
           tabIndex={0}
+          aria-label={`Node selector: ${displayText}`}
           variant="body2"
           sx={{
             cursor: 'help',

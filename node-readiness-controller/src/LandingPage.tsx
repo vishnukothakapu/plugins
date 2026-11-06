@@ -10,7 +10,7 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { MetricCardsGrid, RulesAttentionSection, StatusHeader } from './components/landing';
 import { NodeReadinessRule } from './resources';
-import { nrcRouteNames, nrcRoutePaths } from './utils';
+import { getControllerHealth, nrcRouteNames, nrcRoutePaths } from './utils';
 
 /**
  * Landing Page component providing fleet-wide overview cards and health orientation.
@@ -21,11 +21,21 @@ import { nrcRouteNames, nrcRoutePaths } from './utils';
  */
 export default function LandingPage() {
   const [rules, rulesError] = NodeReadinessRule.useList();
-  const [deployment, deploymentError] = K8s.ResourceClasses.Deployment.useGet(
-    'nrr-controller-manager',
-    'nrr-system'
-  );
+  const [leases, leaseError] = K8s.ResourceClasses.Lease.useList({
+    fieldSelector: 'metadata.name=ba65f13e.readiness.node.x-k8s.io',
+  });
+  const [deployments, deploymentError] = K8s.ResourceClasses.Deployment.useList({
+    labelSelector:
+      'app.kubernetes.io/name in (node-readiness-controller,nrrcontroller,nrr-controller-manager)',
+  });
   const history = useHistory();
+
+  const controllerHealth = getControllerHealth({
+    leases,
+    leaseError,
+    deployments,
+    deploymentError,
+  });
 
   if (rulesError) {
     const isForbidden = (rulesError as any)?.status === 403;
@@ -204,8 +214,7 @@ export default function LandingPage() {
       <SectionBox title="Node Readiness Controller">
         <StatusHeader
           totalRules={totalRules}
-          deployment={deployment}
-          deploymentError={deploymentError}
+          controllerHealth={controllerHealth}
           onExploreRules={handleExploreRules}
         />
 

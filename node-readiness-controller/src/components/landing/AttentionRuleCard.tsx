@@ -42,11 +42,30 @@ export default function AttentionRuleCard({
     ? theme.palette.warning.main
     : theme.palette.info.main;
 
+  const issuesDesc = [
+    hasFailed ? `${failedCount} node evaluation error${failedCount > 1 ? 's' : ''}` : '',
+    taintsPresent > 0
+      ? `${taintsPresent} node${taintsPresent > 1 ? 's' : ''} with taint present`
+      : '',
+    isReconciling
+      ? isPendingSync
+        ? 'Pending controller sync'
+        : 'Spec modified (pending sync)'
+      : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  const accessibleLabel = `Rule ${name}${isDryRun ? ' (Dry Run)' : ''}. Issues: ${
+    issuesDesc || 'None'
+  }`;
+
   return (
     <Card
       elevation={0}
       role="button"
       tabIndex={0}
+      aria-label={accessibleLabel}
       sx={{
         width: '100%',
         display: 'flex',

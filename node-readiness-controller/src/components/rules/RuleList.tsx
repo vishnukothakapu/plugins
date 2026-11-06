@@ -25,12 +25,13 @@ export default function RuleList() {
         {
           id: 'name',
           label: 'Name',
-          getValue: (rule: NodeReadinessRule) => rule.metadata.name,
+          getValue: (rule: NodeReadinessRule) => rule.getName(),
           render: (rule: NodeReadinessRule) => {
             const isDryRun = rule.isDryRun;
+            const name = rule.getName();
             return (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Tooltip title={rule.metadata.name}>
+                <Tooltip title={name}>
                   <Typography
                     variant="body2"
                     sx={{
@@ -41,11 +42,8 @@ export default function RuleList() {
                       maxWidth: '200px',
                     }}
                   >
-                    <Link
-                      routeName={nrcRouteNames.ruleDetail}
-                      params={{ name: rule.metadata.name }}
-                    >
-                      {rule.metadata.name}
+                    <Link routeName={nrcRouteNames.ruleDetail} params={{ name }}>
+                      {name}
                     </Link>
                   </Typography>
                 </Tooltip>
