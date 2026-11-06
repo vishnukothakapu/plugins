@@ -27,14 +27,14 @@ export interface RuleDetailSectionItem {
  * @returns Array of section name-value pairs for the details grid.
  */
 export function getRuleDetailSections(rule: NodeReadinessRule | null): RuleDetailSectionItem[] {
-  const spec = rule?.spec ?? rule?.jsonData?.spec;
-  const status = rule?.status ?? rule?.jsonData?.status;
+  const spec = rule?.spec;
+  const status = rule?.status;
   if (!rule || !spec) return [];
 
   const { targeted, satisfied, unsatisfied, failed } = getRuleStats(rule);
-  const enforcementMode = rule.enforcementMode ?? (spec.enforcementMode || 'continuous');
-  const isDryRun = rule.isDryRun ?? Boolean(spec.dryRun);
-  const conditionPolicy = rule.conditionPolicy ?? (spec.conditionPolicy || 'allOf');
+  const enforcementMode = rule.enforcementMode;
+  const isDryRun = rule.isDryRun;
+  const conditionPolicy = rule.conditionPolicy;
 
   const sections: RuleDetailSectionItem[] = [
     {
@@ -131,7 +131,7 @@ export default function RuleDetails() {
       withEvents
       extraInfo={getRuleDetailSections}
       extraSections={(rule: NodeReadinessRule | null) => {
-        const spec = rule?.spec ?? rule?.jsonData?.spec;
+        const spec = rule?.spec;
         if (!rule || !spec) return [];
         return [
           {

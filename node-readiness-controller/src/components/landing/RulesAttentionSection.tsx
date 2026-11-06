@@ -2,10 +2,12 @@ import { Icon } from '@iconify/react';
 import { Box, Card, Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React from 'react';
+import { getRuleStats } from '../../utils';
 import AttentionRuleCard from './AttentionRuleCard';
 
 interface AttentionRule {
-  metadata: { name: string };
+  metadata: { name: string; generation?: number };
+  getName?: () => string;
   spec?: { dryRun?: boolean };
   status?: {
     failedNodes?: Array<{ nodeName: string; reason?: string }>;
@@ -81,31 +83,27 @@ export default function RulesAttentionSection({
       ) : (
         <Grid container spacing={2} alignItems="stretch">
           {rulesNeedingAttention.map(rule => {
-            const failed = rule.status?.failedNodes || [];
-            const failedNodeNames = new Set(failed.map((f: any) => f.nodeName));
-            const evals = (rule.status?.nodeEvaluations || []).filter(
-              (e: any) => !failedNodeNames.has(e.nodeName)
-            );
-            const gen = rule.jsonData?.metadata?.generation;
+            const stats = getRuleStats(rule as any);
+            const gen = rule.metadata?.generation ?? rule.jsonData?.metadata?.generation;
             const obsGen = rule.status?.observedGeneration;
 
             const taintsPresent =
-              rule.spec?.dryRun !== true
-                ? evals.filter(e => e.taintStatus === 'Present').length
-                : 0;
+              !stats.isDryRun && typeof stats.unsatisfied === 'number' ? stats.unsatisfied : 0;
             const isReconciling = gen !== undefined && (obsGen === undefined || obsGen < gen);
             const isPendingSync = gen !== undefined && obsGen === undefined;
 
+            const ruleName = rule.getName?.() ?? rule.metadata.name;
+
             return (
-              <Grid item xs={12} sm={6} md={4} key={rule.metadata.name} sx={{ display: 'flex' }}>
+              <Grid item xs={12} sm={6} md={4} key={ruleName} sx={{ display: 'flex' }}>
                 <AttentionRuleCard
-                  name={rule.metadata.name}
-                  isDryRun={rule.spec?.dryRun === true}
-                  failedCount={failed.length}
+                  name={ruleName}
+                  isDryRun={stats.isDryRun}
+                  failedCount={stats.failed}
                   taintsPresent={taintsPresent}
                   isReconciling={isReconciling}
                   isPendingSync={isPendingSync}
-                  onClick={() => onRuleClick(rule.metadata.name)}
+                  onClick={() => onRuleClick(ruleName)}
                 />
               </Grid>
             );

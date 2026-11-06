@@ -27,8 +27,8 @@ export interface RuleStatusInfo {
   status: 'Terminating' | 'Dry Run' | 'Pending' | 'Failed' | 'OK';
   /** Display label to render inside the status badge. */
   label: 'Terminating' | 'Dry Run' | 'Pending' | 'Failed' | 'OK';
-  /** Semantic severity level determining the badge color. */
-  severity: 'error' | 'warning' | 'info' | 'success';
+  /** Semantic severity level determining the badge color ('': color-neutral default). */
+  severity: 'error' | 'warning' | 'info' | 'success' | '';
 }
 
 const statsCache = new WeakMap<object, RuleStats>();
@@ -54,7 +54,9 @@ export function getRuleStats(rule: NodeReadinessRule): RuleStats {
 
   const statusObj = rule.status ?? rule.jsonData?.status;
   const isDryRun =
-    typeof rule.isDryRun === 'boolean' ? rule.isDryRun : Boolean(rule.jsonData?.spec?.dryRun);
+    typeof rule.isDryRun === 'boolean'
+      ? rule.isDryRun
+      : Boolean(rule.spec?.dryRun ?? rule.jsonData?.spec?.dryRun);
 
   if (statusObj && typeof statusObj === 'object' && statsCache.has(statusObj)) {
     return statsCache.get(statusObj)!;
@@ -124,7 +126,7 @@ export function getRuleStatusInfo(rule: NodeReadinessRule): RuleStatusInfo {
       return { status: 'Failed', label: 'Failed', severity: 'error' };
     }
     if (stats.hasSummary) {
-      return { status: 'Dry Run', label: 'Dry Run', severity: 'info' };
+      return { status: 'Dry Run', label: 'Dry Run', severity: '' };
     }
     return { status: 'Pending', label: 'Pending', severity: 'warning' };
   }

@@ -10,7 +10,7 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { MetricCardsGrid, RulesAttentionSection, StatusHeader } from './components/landing';
 import { NodeReadinessRule } from './resources';
-import { nrcRouteNames, nrcRoutePaths } from './utils';
+import { getControllerHealth, getRuleStats, nrcRouteNames, nrcRoutePaths } from './utils';
 
 /**
  * Landing Page component providing fleet-wide overview cards and health orientation.
@@ -21,11 +21,33 @@ import { nrcRouteNames, nrcRoutePaths } from './utils';
  */
 export default function LandingPage() {
   const [rules, rulesError] = NodeReadinessRule.useList();
-  const [deployment, deploymentError] = K8s.ResourceClasses.Deployment.useGet(
-    'nrr-controller-manager',
-    'nrr-system'
-  );
+
+  // 1. Primary controller health check: Query the leader election Lease object
+  // directly by name (`ba65f13e.readiness.node.x-k8s.io`, defined in cmd/main.go upstream).
+  // Using a fieldSelector allows a single targeted query across namespaces without fetching
+  // unrelated cluster leases, verifying active heartbeat renewals against lease duration.
+  const [leases, leaseError] = K8s.ResourceClasses.Lease.useList({
+    fieldSelector: 'metadata.name=ba65f13e.readiness.node.x-k8s.io',
+  });
+
+  // 2. Fallback controller health check: Query deployments matching standard NRC app labels
+  // (`app.kubernetes.io/name in (...)`) for non-HA setups where --leader-elect=false.
+  // Using a labelSelector ensures we only retrieve potential controller deployments across
+  // all namespaces rather than listing every cluster deployment. The returned deployments
+  // undergo client-side container image and command verification in getControllerHealth
+  // before checking replica readiness.
+  const [deployments, deploymentError] = K8s.ResourceClasses.Deployment.useList({
+    labelSelector:
+      'app.kubernetes.io/name in (node-readiness-controller,nrrcontroller,nrr-controller-manager)',
+  });
   const history = useHistory();
+
+  const controllerHealth = getControllerHealth({
+    leases,
+    leaseError,
+    deployments,
+    deploymentError,
+  });
 
   if (rulesError) {
     const isForbidden = (rulesError as any)?.status === 403;
@@ -125,52 +147,40 @@ export default function LandingPage() {
     );
   }
 
+  // Helper to check if rule specification has been modified and awaits controller sync
+  const isRuleReconciling = (rule: NodeReadinessRule): boolean => {
+    const gen = rule.metadata?.generation ?? rule.jsonData?.metadata?.generation;
+    const obsGen = rule.status?.observedGeneration;
+    return gen !== undefined && (obsGen === undefined || obsGen < gen);
+  };
+
   // 1. Total Rules: In-memory count of fetched NodeReadinessRule objects
   const totalRules = rules.length;
 
   // 2. Rules with Taints Present:
-  // Count of non-dry-run rules (spec.dryRun !== true) where at least one node evaluation currently reports taintStatus === 'Present'.
+  // Count of non-dry-run rules where at least one node evaluation currently reports taintStatus === 'Present'.
   // Rules with spec.dryRun: true are strictly excluded because they do not actively enforce or apply taints.
-  // Nodes in failedNodes are excluded following canonical ruleStats precedence.
   const rulesWithTaintsPresent = rules.filter(rule => {
-    if (rule.spec?.dryRun === true) return false;
-    const failedNodeNames = new Set((rule.status?.failedNodes || []).map((f: any) => f.nodeName));
-    const evals = (rule.status?.nodeEvaluations || []).filter(
-      (ev: any) => !failedNodeNames.has(ev.nodeName)
-    );
-    return evals.some(ev => ev.taintStatus === 'Present');
+    const stats = getRuleStats(rule);
+    return !stats.isDryRun && typeof stats.unsatisfied === 'number' && stats.unsatisfied > 0;
   }).length;
 
   // 3. Rules with Evaluation Errors:
   // Count of rules where failedNodes is not empty (applies to both live and dry-run rules).
-  const rulesWithEvaluationErrors = rules.filter(rule => {
-    const failed = rule.status?.failedNodes || [];
-    return failed.length > 0;
-  }).length;
+  const rulesWithEvaluationErrors = rules.filter(rule => getRuleStats(rule).failed > 0).length;
 
   // 4. Stale/Reconciling count:
-  const reconcilingRules = rules.filter(rule => {
-    const gen = rule.jsonData?.metadata?.generation;
-    const obsGen = rule.status?.observedGeneration;
-    return gen !== undefined && (obsGen === undefined || obsGen < gen);
-  }).length;
+  const reconcilingRules = rules.filter(isRuleReconciling).length;
 
   // Rules Requiring Attention
   const rulesNeedingAttention = rules.filter(rule => {
-    const failed = rule.status?.failedNodes || [];
-    const failedNodeNames = new Set(failed.map((f: any) => f.nodeName));
-    const evals = (rule.status?.nodeEvaluations || []).filter(
-      (e: any) => !failedNodeNames.has(e.nodeName)
-    );
-    const gen = rule.jsonData?.metadata?.generation;
-    const obsGen = rule.status?.observedGeneration;
-
-    const hasFailedNodes = failed.length > 0;
+    const stats = getRuleStats(rule);
     const hasTaintPresent =
-      rule.spec?.dryRun !== true && evals.some(e => e.taintStatus === 'Present');
-    const isReconciling = gen !== undefined && (obsGen === undefined || obsGen < gen);
+      !stats.isDryRun && typeof stats.unsatisfied === 'number' && stats.unsatisfied > 0;
+    const hasEvaluationErrors = stats.failed > 0;
+    const isReconciling = isRuleReconciling(rule);
 
-    return hasFailedNodes || hasTaintPresent || isReconciling;
+    return hasEvaluationErrors || hasTaintPresent || isReconciling;
   });
 
   const handleExploreRules = () => {
@@ -204,8 +214,7 @@ export default function LandingPage() {
       <SectionBox title="Node Readiness Controller">
         <StatusHeader
           totalRules={totalRules}
-          deployment={deployment}
-          deploymentError={deploymentError}
+          controllerHealth={controllerHealth}
           onExploreRules={handleExploreRules}
         />
 

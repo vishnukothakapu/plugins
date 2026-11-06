@@ -219,7 +219,7 @@ describe('utils', () => {
       const info = getRuleStatusInfo(mockRule);
       expect(info.status).toBe('Dry Run');
       expect(info.label).toBe('Dry Run');
-      expect(info.severity).toBe('info');
+      expect(info.severity).toBe('');
     });
 
     it('returns Pending for dry-run rules without status/results', () => {
