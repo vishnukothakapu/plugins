@@ -1,4 +1,9 @@
-import { Link, ResourceListView, StatusLabel } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import {
+  CreateResourceButton,
+  Link,
+  ResourceListView,
+  StatusLabel,
+} from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box, Chip, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { NodeReadinessRule } from '../../resources';
@@ -18,19 +23,24 @@ export default function RuleList() {
       title="Node Readiness Rules"
       resourceClass={NodeReadinessRule}
       id="nrc-readiness-rules"
-      headerProps={{ titleSideActions: [] }}
+      headerProps={{
+        titleSideActions: [
+          <CreateResourceButton key="create-rule" resourceClass={NodeReadinessRule} />,
+        ],
+      }}
       enableRowActions={false}
       enableRowSelection={false}
       columns={[
         {
           id: 'name',
           label: 'Name',
-          getValue: (rule: NodeReadinessRule) => rule.metadata.name,
+          getValue: (rule: NodeReadinessRule) => rule.getName(),
           render: (rule: NodeReadinessRule) => {
             const isDryRun = rule.isDryRun;
+            const name = rule.getName();
             return (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Tooltip title={rule.metadata.name}>
+                <Tooltip title={name}>
                   <Typography
                     variant="body2"
                     sx={{
@@ -41,11 +51,8 @@ export default function RuleList() {
                       maxWidth: '200px',
                     }}
                   >
-                    <Link
-                      routeName={nrcRouteNames.ruleDetail}
-                      params={{ name: rule.metadata.name }}
-                    >
-                      {rule.metadata.name}
+                    <Link routeName={nrcRouteNames.ruleDetail} params={{ name }}>
+                      {name}
                     </Link>
                   </Typography>
                 </Tooltip>
@@ -53,7 +60,7 @@ export default function RuleList() {
                   <Chip
                     label="Dry Run"
                     size="small"
-                    color="warning"
+                    color="default"
                     sx={{ height: 18, fontSize: '0.65rem', mt: 0.5 }}
                   />
                 )}
@@ -64,6 +71,11 @@ export default function RuleList() {
         {
           id: 'enforcement',
           label: 'Enforcement',
+          filterVariant: 'multi-select',
+          filterSelectOptions: [
+            { label: 'continuous', value: 'continuous' },
+            { label: 'bootstrap-only', value: 'bootstrap-only' },
+          ],
           getValue: (rule: NodeReadinessRule) => `${rule.enforcementMode} ${rule.conditionPolicy}`,
           render: (rule: NodeReadinessRule) => {
             const mode = rule.enforcementMode;
@@ -96,10 +108,72 @@ export default function RuleList() {
         {
           id: 'status',
           label: 'Status',
+          filterVariant: 'multi-select',
+          filterSelectOptions: [
+            { label: 'OK', value: 'OK' },
+            { label: 'Pending', value: 'Pending' },
+            { label: 'Dry Run', value: 'Dry Run' },
+            { label: 'Failed', value: 'Failed' },
+            { label: 'Terminating', value: 'Terminating' },
+          ],
           getValue: (rule: NodeReadinessRule) => getRuleStatusInfo(rule).status,
           render: (rule: NodeReadinessRule) => {
             const info = getRuleStatusInfo(rule);
             return <StatusLabel status={info.severity}>{info.label}</StatusLabel>;
+          },
+        },
+        {
+          id: 'satisfied',
+          label: 'Satisfied Nodes',
+          getValue: (rule: NodeReadinessRule) => {
+            const stats = getRuleStats(rule);
+            if (stats.isDryRun) return 'N/A';
+            if (!stats.hasSummary) return '-';
+            return `${stats.satisfied}/${stats.targeted}`;
+          },
+          render: (rule: NodeReadinessRule) => {
+            const stats = getRuleStats(rule);
+            if (stats.isDryRun) {
+              return (
+                <Box sx={{ minWidth: '80px', textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    N/A
+                  </Typography>
+                </Box>
+              );
+            }
+            if (!stats.hasSummary) {
+              return (
+                <Box sx={{ minWidth: '80px', textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    -
+                  </Typography>
+                </Box>
+              );
+            }
+            const allSatisfied = stats.targeted > 0 && stats.satisfied === stats.targeted;
+            const hasUnsatisfied = Number(stats.unsatisfied) > 0;
+            return (
+              <Box sx={{ minWidth: '80px', textAlign: 'center' }}>
+                <Tooltip
+                  title={`${stats.satisfied} out of ${stats.targeted} nodes satisfying this rule`}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 'bold' }}
+                    color={
+                      allSatisfied
+                        ? 'success.main'
+                        : hasUnsatisfied
+                        ? 'warning.main'
+                        : 'text.secondary'
+                    }
+                  >
+                    {stats.satisfied} / {stats.targeted}
+                  </Typography>
+                </Tooltip>
+              </Box>
+            );
           },
         },
         {

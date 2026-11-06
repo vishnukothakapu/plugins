@@ -104,7 +104,7 @@ export default function AttentionRuleCard({
             <Chip
               label="Dry Run"
               size="small"
-              color="warning"
+              color="default"
               variant="outlined"
               sx={{ flexShrink: 0, height: 22, fontSize: '0.7rem' }}
             />

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getRuleStats, getRuleStatusInfo } from './ruleStats';
+import { getRuleStats, getRuleStatusInfo, isRulePendingSync, isRuleReconciling } from './ruleStats';
 
 describe('utils', () => {
   describe('getRuleStats', () => {
@@ -219,7 +219,7 @@ describe('utils', () => {
       const info = getRuleStatusInfo(mockRule);
       expect(info.status).toBe('Dry Run');
       expect(info.label).toBe('Dry Run');
-      expect(info.severity).toBe('info');
+      expect(info.severity).toBe('');
     });
 
     it('returns Pending for dry-run rules without status/results', () => {
@@ -310,6 +310,51 @@ describe('utils', () => {
       expect(info.status).toBe('Pending');
       expect(info.label).toBe('Pending');
       expect(info.severity).toBe('error');
+    });
+  });
+
+  describe('isRuleReconciling and isRulePendingSync', () => {
+    it('identifies newly created rules with undefined observedGeneration as reconciling and pending sync', () => {
+      const newRule = {
+        metadata: { name: 'brand-new-rule', generation: 1 },
+        status: {},
+      };
+      expect(isRuleReconciling(newRule)).toBe(true);
+      expect(isRulePendingSync(newRule)).toBe(true);
+    });
+
+    it('identifies updated rules with observedGeneration < generation as reconciling but not pending sync', () => {
+      const updatedRule = {
+        metadata: { name: 'updated-rule', generation: 3 },
+        status: { observedGeneration: 2 },
+      };
+      expect(isRuleReconciling(updatedRule)).toBe(true);
+      expect(isRulePendingSync(updatedRule)).toBe(false);
+    });
+
+    it('returns false when observedGeneration matches generation (fully synced)', () => {
+      const syncedRule = {
+        metadata: { name: 'synced-rule', generation: 2 },
+        status: { observedGeneration: 2 },
+      };
+      expect(isRuleReconciling(syncedRule)).toBe(false);
+      expect(isRulePendingSync(syncedRule)).toBe(false);
+    });
+
+    it('reads generation from jsonData when top-level metadata lacks generation', () => {
+      const jsonRule = {
+        jsonData: { metadata: { generation: 2 } },
+        status: { observedGeneration: 1 },
+      };
+      expect(isRuleReconciling(jsonRule)).toBe(true);
+      expect(isRulePendingSync(jsonRule)).toBe(false);
+    });
+
+    it('handles null/undefined rule safely', () => {
+      expect(isRuleReconciling(null)).toBe(false);
+      expect(isRuleReconciling(undefined)).toBe(false);
+      expect(isRulePendingSync(null)).toBe(false);
+      expect(isRulePendingSync(undefined)).toBe(false);
     });
   });
 });

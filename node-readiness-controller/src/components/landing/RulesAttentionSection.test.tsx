@@ -41,9 +41,8 @@ describe('RulesAttentionSection', () => {
         status: { nodeEvaluations: [{ nodeName: 'node-2', taintStatus: 'Present' }] },
       },
       {
-        metadata: { name: 'dryrun-reconciling-rule' },
+        metadata: { name: 'dryrun-reconciling-rule', generation: 2 },
         spec: { dryRun: true },
-        jsonData: { metadata: { generation: 2 } },
         status: { observedGeneration: 1 },
       },
     ];
