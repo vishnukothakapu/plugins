@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { DateLabel, Resource } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Chip } from '@mui/material';
 import React from 'react';
@@ -26,7 +27,10 @@ export interface RuleDetailSectionItem {
  * @param rule - The NodeReadinessRule instance to extract sections for, or null if loading.
  * @returns Array of section name-value pairs for the details grid.
  */
-export function getRuleDetailSections(rule: NodeReadinessRule | null): RuleDetailSectionItem[] {
+export function getRuleDetailSections(
+  rule: NodeReadinessRule | null,
+  t: (key: string) => string = k => k
+): RuleDetailSectionItem[] {
   const spec = rule?.spec;
   const status = rule?.status;
   if (!rule || !spec) return [];
@@ -38,35 +42,35 @@ export function getRuleDetailSections(rule: NodeReadinessRule | null): RuleDetai
 
   const sections: RuleDetailSectionItem[] = [
     {
-      name: 'Node Selector',
+      name: t('Node Selector'),
       value:
         spec.nodeSelector?.matchLabels || spec.nodeSelector?.matchExpressions ? (
           <NodeSelectorDetails selector={spec.nodeSelector} />
         ) : (
-          'None (Matches all nodes)'
+          t('None (Matches all nodes)')
         ),
     },
     {
-      name: <span style={{ whiteSpace: 'nowrap' }}>Enforcement Mode</span>,
+      name: <span style={{ whiteSpace: 'nowrap' }}>{t('Enforcement Mode')}</span>,
       value: <Chip label={enforcementMode} size="small" variant="outlined" />,
     },
     {
-      name: 'Dry-run',
-      value: <Chip label={isDryRun ? 'Yes' : 'No'} size="small" variant="outlined" />,
+      name: t('Dry-run'),
+      value: <Chip label={isDryRun ? t('Yes') : t('No')} size="small" variant="outlined" />,
     },
     {
-      name: 'Condition Policy',
+      name: t('Condition Policy'),
       value: conditionPolicy,
     },
     {
-      name: 'Taint Managed',
-      value: spec.taint ? formatTaint(spec.taint) : 'None',
+      name: t('Taint Managed'),
+      value: spec.taint ? formatTaint(spec.taint) : t('None'),
     },
     {
-      name: 'Last Evaluated At',
+      name: t('Last Evaluated At'),
       value: (() => {
         if (isDryRun) {
-          return 'Not Available (Dry Run)';
+          return t('Not Available (Dry Run)');
         }
         const records = [...(status?.nodeEvaluations ?? []), ...(status?.failedNodes ?? [])];
         const lastEvaluatedAt = records.reduce<string | undefined>((latest, item) => {
@@ -75,23 +79,23 @@ export function getRuleDetailSections(rule: NodeReadinessRule | null): RuleDetai
             ? latest
             : timestamp;
         }, undefined);
-        return lastEvaluatedAt ? <DateLabel date={lastEvaluatedAt} /> : 'Pending';
+        return lastEvaluatedAt ? <DateLabel date={lastEvaluatedAt} /> : t('Pending');
       })(),
     },
   ];
 
   if (isDryRun) {
     sections.push({
-      name: 'Dry-Run Simulation',
+      name: t('Dry-Run Simulation'),
       value: status?.dryRunResults ? (
         <DryRunResultsSection results={status.dryRunResults} failed={failed} />
       ) : (
-        'Pending simulation'
+        t('Pending simulation')
       ),
     });
   } else {
     sections.push({
-      name: 'Node Status',
+      name: t('Node Status'),
       value: (
         <NodeStatusChips
           targeted={targeted}
@@ -113,6 +117,7 @@ export function getRuleDetailSections(rule: NodeReadinessRule | null): RuleDetai
  * @returns Rendered JSX DetailsGrid component.
  */
 export default function RuleDetails() {
+  const { t } = useTranslation();
   const { name } = useParams<{ name: string }>();
 
   return (
@@ -121,7 +126,7 @@ export default function RuleDetails() {
       name={name!}
       noDefaultActions
       withEvents
-      extraInfo={getRuleDetailSections}
+      extraInfo={(rule: NodeReadinessRule | null) => getRuleDetailSections(rule, t)}
       extraSections={(rule: NodeReadinessRule | null) => {
         const spec = rule?.spec;
         if (!rule || !spec) return [];

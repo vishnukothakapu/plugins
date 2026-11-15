@@ -12,6 +12,20 @@ const { mockResourceListViewProps, mockUseList } = vi.hoisted(() => ({
   mockUseList: vi.fn(),
 }));
 
+vi.mock('@kinvolk/headlamp-plugin/lib', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, any>) => {
+      if (opts) {
+        return Object.entries(opts).reduce(
+          (acc, [k, v]) => acc.replace(new RegExp(`{{${k}}}`, 'g'), String(v)),
+          key
+        );
+      }
+      return key;
+    },
+  }),
+}));
+
 vi.mock('@kinvolk/headlamp-plugin/lib/lib/k8s/crd', () => ({
   makeCustomResourceClass: vi.fn().mockReturnValue(
     class MockCRD {
@@ -24,7 +38,12 @@ vi.mock('@kinvolk/headlamp-plugin/lib/lib/k8s/crd', () => ({
 
 vi.mock('@kinvolk/headlamp-plugin/lib/CommonComponents', () => ({
   Link: ({ children, routeName, url, params }: any) => (
-    <a data-routename={routeName} data-url={url} data-params={JSON.stringify(params)}>
+    <a
+      href={url || `#${routeName}`}
+      data-routename={routeName}
+      data-url={url}
+      data-params={JSON.stringify(params)}
+    >
       {children}
     </a>
   ),

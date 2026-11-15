@@ -11,6 +11,20 @@ const { mockUseGet } = vi.hoisted(() => ({
   mockUseGet: vi.fn(),
 }));
 
+vi.mock('@kinvolk/headlamp-plugin/lib', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, any>) => {
+      if (opts) {
+        return Object.entries(opts).reduce(
+          (acc, [k, v]) => acc.replace(new RegExp(`{{${k}}}`, 'g'), String(v)),
+          key
+        );
+      }
+      return key;
+    },
+  }),
+}));
+
 vi.mock('../../resources', () => ({
   NodeReadinessEvaluation: {
     useGet: mockUseGet,
@@ -136,10 +150,7 @@ describe('NodeReadinessExtension component', () => {
     expect(screen.getByText('None')).toBeInTheDocument();
     const viewLink = screen.getByText('View Full Evaluation');
     expect(viewLink).toBeInTheDocument();
-    expect(viewLink.closest('a')).toHaveAttribute(
-      'data-routename',
-      'nrc-evaluation-details'
-    );
+    expect(viewLink.closest('a')).toHaveAttribute('data-routename', 'nrc-evaluation-details');
     expect(viewLink.closest('a')).toHaveAttribute(
       'data-params',
       JSON.stringify({ name: 'worker-node-01' })

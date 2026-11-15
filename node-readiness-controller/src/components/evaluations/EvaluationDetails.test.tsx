@@ -10,6 +10,20 @@ import EvaluationDetails, { getEvaluationDetailSections } from './EvaluationDeta
 
 const mockDetailsGridProps = vi.fn();
 
+vi.mock('@kinvolk/headlamp-plugin/lib', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, any>) => {
+      if (opts) {
+        return Object.entries(opts).reduce(
+          (acc, [k, v]) => acc.replace(new RegExp(`{{${k}}}`, 'g'), String(v)),
+          key
+        );
+      }
+      return key;
+    },
+  }),
+}));
+
 vi.mock('@kinvolk/headlamp-plugin/lib/lib/k8s/crd', () => ({
   makeCustomResourceClass: vi.fn().mockImplementation(() => {
     return class MockCRD {

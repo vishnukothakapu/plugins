@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import {
   DateLabel,
   Link,
@@ -31,6 +32,7 @@ export interface EvaluationRuleTableProps {
  * and a nested condition-by-condition evaluation breakdown table.
  */
 export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableProps) {
+  const { t } = useTranslation();
   const [expandedRule, setExpandedRule] = useState<string | false>(false);
 
   const handleAccordionChange =
@@ -40,16 +42,16 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
 
   if (rules.length === 0) {
     return (
-      <SectionBox title="Rule Evaluations">
+      <SectionBox title={t('Rule Evaluations')}>
         <Typography variant="body2" color="text.secondary">
-          No rules evaluated for this node yet.
+          {t('No rules evaluated for this node yet.')}
         </Typography>
       </SectionBox>
     );
   }
 
   return (
-    <SectionBox title="Rule Evaluations">
+    <SectionBox title={t('Rule Evaluations')}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {rules.map((r: RuleEvaluation) => {
           const isSatisfied = r.ruleStatus === 'Satisfied' || r.status === 'Satisfied';
@@ -113,7 +115,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                       variant="caption"
                       sx={{ color: 'primary.main', textDecoration: 'underline' }}
                     >
-                      Visit rule
+                      {t('Visit rule')}
                     </Typography>
                   </Link>
                 </Box>
@@ -121,7 +123,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                 {/* Column 2: Enforcement Mode */}
                 <Box sx={{ minWidth: '110px' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                    Enforcement
+                    {t('Enforcement')}
                   </Typography>
                   <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
                     {r.enforcementMode || 'continuous'}
@@ -131,7 +133,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                 {/* Column 3: Status */}
                 <Box sx={{ minWidth: '90px' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                    Status
+                    {t('Status')}
                   </Typography>
                   <StatusLabel status={isSatisfied ? 'success' : 'warning'}>
                     {r.ruleStatus || (isSatisfied ? 'Satisfied' : 'Unsatisfied')}
@@ -141,11 +143,11 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                 {/* Column 4: Taint */}
                 <Box sx={{ minWidth: '130px' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                    Taint
+                    {t('Taint')}
                   </Typography>
                   {isPresent ? (
                     <Chip
-                      label={taintDesc || 'Taint Present'}
+                      label={taintDesc || t('Taint Present')}
                       size="small"
                       color="warning"
                       variant="outlined"
@@ -163,7 +165,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                 {/* Column 5: Conditions Satisfaction Ratio */}
                 <Box sx={{ minWidth: '120px' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                    Conditions
+                    {t('Conditions')}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <StatusLabel status={isAllConditionsSatisfied ? 'success' : 'warning'}>
@@ -238,7 +240,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                               color="text.secondary"
                               sx={{ fontWeight: 600 }}
                             >
-                              Reason:
+                              {t('Reason:')}
                             </Typography>
                             <Chip
                               label={r.reason}
@@ -272,7 +274,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                             letterSpacing: 0.5,
                           }}
                         >
-                          Message:
+                          {t('Message:')}
                         </Typography>
                         <Typography
                           variant="body2"
@@ -295,7 +297,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                         letterSpacing: 0.5,
                       }}
                     >
-                      Lifecycle Timestamps
+                      {t('Lifecycle Timestamps')}
                     </Typography>
                     <Box
                       sx={{
@@ -318,7 +320,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                           color="text.secondary"
                           sx={{ display: 'block', mb: 0.5 }}
                         >
-                          First Evaluated At:
+                          {t('First Evaluated At:')}
                         </Typography>
                         <Typography variant="body2" component="div">
                           {r.firstEvaluatedAt ? <DateLabel date={r.firstEvaluatedAt} /> : '—'}
@@ -338,7 +340,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                           color="text.secondary"
                           sx={{ display: 'block', mb: 0.5 }}
                         >
-                          Last Evaluated At:
+                          {t('Last Evaluated At:')}
                         </Typography>
                         <Typography variant="body2" component="div">
                           {r.lastEvaluatedAt ? <DateLabel date={r.lastEvaluatedAt} /> : '—'}
@@ -359,7 +361,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                             color="text.secondary"
                             sx={{ display: 'block', mb: 0.5 }}
                           >
-                            Taint Observed At:
+                            {t('Taint Observed At:')}
                           </Typography>
                           <Typography variant="body2" component="div">
                             <DateLabel date={r.taintObservedAt} />
@@ -381,7 +383,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                             color="text.secondary"
                             sx={{ display: 'block', mb: 0.5 }}
                           >
-                            Taint Added At:
+                            {t('Taint Added At:')}
                           </Typography>
                           <Typography variant="body2" component="div">
                             <DateLabel date={r.taintAddedAt} />
@@ -403,7 +405,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                             color="text.secondary"
                             sx={{ display: 'block', mb: 0.5 }}
                           >
-                            Taint Removed At:
+                            {t('Taint Removed At:')}
                           </Typography>
                           <Typography variant="body2" component="div">
                             <DateLabel date={r.taintRemovedAt} />
@@ -418,7 +420,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                   {/* Nested Per-Condition Evaluation Table */}
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Typography variant="subtitle2" component="h4" sx={{ fontWeight: 600 }}>
-                      Readiness Conditions Breakdown ({conditions.length})
+                      {t('Readiness Conditions Breakdown')} ({conditions.length})
                     </Typography>
 
                     <Box
@@ -433,7 +435,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                       <SimpleTable
                         columns={[
                           {
-                            label: 'Condition Type',
+                            label: t('Condition Type'),
                             getter: (c: ReadinessConditionEvaluation) => (
                               <Typography variant="body2" sx={{ fontWeight: 500 }}>
                                 {c.type}
@@ -441,18 +443,18 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                             ),
                           },
                           {
-                            label: 'Satisfied',
+                            label: t('Satisfied'),
                             getter: (c: ReadinessConditionEvaluation) => {
                               const satisfied = c.currentStatus === c.requiredStatus;
                               return (
                                 <StatusLabel status={satisfied ? 'success' : 'error'}>
-                                  {satisfied ? 'Satisfied' : 'Unsatisfied'}
+                                  {satisfied ? t('Satisfied') : t('Unsatisfied')}
                                 </StatusLabel>
                               );
                             },
                           },
                           {
-                            label: 'Current Status',
+                            label: t('Current Status'),
                             getter: (c: ReadinessConditionEvaluation) => {
                               const severity =
                                 c.currentStatus === 'True'
@@ -464,13 +466,13 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                             },
                           },
                           {
-                            label: 'Required Status',
+                            label: t('Required Status'),
                             getter: (c: ReadinessConditionEvaluation) => (
                               <Typography variant="body2">{c.requiredStatus}</Typography>
                             ),
                           },
                           {
-                            label: 'Default Status',
+                            label: t('Default Status'),
                             getter: (c: ReadinessConditionEvaluation) => (
                               <Typography variant="body2" color="text.secondary">
                                 {c.defaultStatus || 'Unknown (implicit)'}
@@ -479,7 +481,7 @@ export default function EvaluationRuleTable({ rules = [] }: EvaluationRuleTableP
                           },
                         ]}
                         data={conditions}
-                        emptyMessage="No conditions defined for this rule."
+                        emptyMessage={t('No conditions defined for this rule.')}
                       />
                     </Box>
                   </Box>

@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { Grid } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React from 'react';
@@ -26,15 +27,16 @@ export default function MetricCardsGrid({
   reconcilingRules,
   onCardClick,
 }: MetricCardsGridProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
 
   return (
     <Grid container spacing={3} sx={{ mb: 4 }}>
       <Grid item xs={12} sm={6} md={3}>
         <MetricCard
-          title="Total Rules"
+          title={t('Total Rules')}
           value={totalRules}
-          caption="Active rule definitions"
+          caption={t('Active rule definitions')}
           icon="mdi:shield-check-outline"
           iconSize="2.3rem"
           activeColor={theme.palette.primary.main}
@@ -44,9 +46,9 @@ export default function MetricCardsGrid({
 
       <Grid item xs={12} sm={6} md={3}>
         <MetricCard
-          title="Taints Present"
+          title={t('Taints Present')}
           value={rulesWithTaintsPresent}
-          caption="Rules actively applying taints"
+          caption={t('Rules actively applying taints')}
           icon="mdi:shield-alert-outline"
           iconSize="2.3rem"
           activeColor={theme.palette.warning.main}
@@ -56,9 +58,9 @@ export default function MetricCardsGrid({
 
       <Grid item xs={12} sm={6} md={3}>
         <MetricCard
-          title="Evaluation Errors"
+          title={t('Evaluation Errors')}
           value={rulesWithEvaluationErrors}
-          caption="Controller evaluation failures"
+          caption={t('Controller evaluation failures')}
           icon="mdi:alert-circle-outline"
           iconSize="2.3rem"
           activeColor={theme.palette.error.main}
@@ -68,14 +70,16 @@ export default function MetricCardsGrid({
 
       <Grid item xs={12} sm={6} md={3}>
         <MetricCard
-          title="Pending Rule Sync"
+          title={t('Pending Rule Sync')}
           value={reconcilingRules}
-          caption="Spec modified, awaiting sync"
+          caption={t('Spec modified, awaiting sync')}
           icon="mdi:sync"
           iconSize="2.3rem"
           activeColor={theme.palette.info.main}
           onClick={onCardClick}
-          tooltip="Rules awaiting initial controller evaluation or where spec was modified and status has not yet synced"
+          tooltip={t(
+            'Rules awaiting initial controller evaluation or where spec was modified and status has not yet synced'
+          )}
         />
       </Grid>
     </Grid>

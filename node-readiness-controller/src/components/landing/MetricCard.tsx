@@ -43,6 +43,7 @@ export default function MetricCard({
       elevation={0}
       role="button"
       tabIndex={0}
+      aria-label={`${title}: ${value}${caption ? `. ${caption}` : ''}`}
       sx={{
         height: '100%',
         border: '1px solid',

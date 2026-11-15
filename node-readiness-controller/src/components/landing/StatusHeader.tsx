@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { StatusLabel } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box, Button, Chip, Tooltip, Typography } from '@mui/material';
 import React from 'react';
@@ -22,6 +23,7 @@ export default function StatusHeader({
   controllerHealth,
   onExploreRules,
 }: StatusHeaderProps) {
+  const { t } = useTranslation();
   const isForbidden = controllerHealth?.status === 'forbidden';
   const isLoading = controllerHealth?.status === 'loading';
 
@@ -52,9 +54,9 @@ export default function StatusHeader({
             fontSize: '0.75rem',
           }}
         >
-          API Status:
+          {t('API Status:')}
         </Typography>
-        <StatusLabel status="success">API Available</StatusLabel>
+        <StatusLabel status="success">{t('API Available')}</StatusLabel>
         <Chip
           label="readiness.node.x-k8s.io/v1alpha1"
           size="small"
@@ -79,10 +81,16 @@ export default function StatusHeader({
                 ml: 1,
               }}
             >
-              Controller:
+              {t('Controller:')}
             </Typography>
             <Tooltip title={tooltipTitle} arrow>
-              <span>
+              <span
+                aria-label={
+                  tooltipTitle
+                    ? `${t('Controller status:')} ${badgeLabel}. ${tooltipTitle}`
+                    : `${t('Controller status:')} ${badgeLabel}`
+                }
+              >
                 <StatusLabel status={badgeStatus}>{badgeLabel}</StatusLabel>
               </span>
             </Tooltip>
@@ -95,8 +103,9 @@ export default function StatusHeader({
         onClick={onExploreRules}
         startIcon={<Icon icon="mdi:format-list-checks" />}
         size="small"
+        aria-label={`${t('Explore all')} ${totalRules} ${t('rules')}`}
       >
-        Explore All Rules ({totalRules})
+        {t('Explore All Rules')} ({totalRules})
       </Button>
     </Box>
   );

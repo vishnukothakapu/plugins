@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import {
   Link,
   SectionBox,
@@ -25,6 +26,7 @@ export interface NodeReadinessExtensionProps {
  * - Rules Table rendered using Headlamp's SimpleTable with columns: Rule Name, Enforcement Mode, Status, Taint, Reason.
  */
 export default function NodeReadinessExtension({ node }: NodeReadinessExtensionProps) {
+  const { t } = useTranslation();
   const nodeName =
     typeof node?.getName === 'function' ? node.getName() : node?.metadata?.name || '';
 
@@ -51,7 +53,7 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
     .map((r: RuleEvaluation) => `${r.taintKey}:${r.taintEffect || 'NoSchedule'}`);
 
   return (
-    <SectionBox title="Node Readiness Lifecycle">
+    <SectionBox title={t('Node Readiness Lifecycle')}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* Summary Bar */}
         <Box
@@ -72,17 +74,17 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
             {/* Readiness State */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
-                State:
+                {t('State:')}
               </Typography>
               <StatusLabel status={stateInfo.severity}>
-                {summary.isPending ? 'Evaluation in progress' : stateInfo.label}
+                {summary.isPending ? t('Evaluation in progress') : stateInfo.label}
               </StatusLabel>
             </Box>
 
             {/* Rules Status Ratio */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
-                Rules Status:
+                {t('Rules Status:')}
               </Typography>
               <StatusLabel status={summary.statusSeverity}>{summary.statusLabel}</StatusLabel>
             </Box>
@@ -90,26 +92,26 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
             {/* Active Taints */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
-                Active Taints:
+                {t('Active Taints:')}
               </Typography>
               {activeTaints.length > 0 ? (
                 <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                  {activeTaints.map(t => (
+                  {activeTaints.map(taint => (
                     <Chip
-                      key={t}
-                      label={t}
+                      key={taint}
+                      label={taint}
                       size="small"
                       color="warning"
                       variant="outlined"
                       tabIndex={0}
-                      aria-label={`Active taint: ${t}`}
+                      aria-label={`Active taint: ${taint}`}
                       sx={{ fontWeight: 600 }}
                     />
                   ))}
                 </Box>
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  None
+                  {t('None')}
                 </Typography>
               )}
             </Box>
@@ -143,20 +145,20 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
               },
             }}
           >
-            View Full Evaluation
+            {t('View Full Evaluation')}
           </Link>
         </Box>
 
         {/* Rules Table conforming to Design Doc §5.6 */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Typography variant="subtitle2" component="h3" sx={{ fontWeight: 600 }}>
-            Readiness Rules ({rules.length})
+            {`${t('Readiness Rules')} (${rules.length})`}
           </Typography>
 
           <SimpleTable
             columns={[
               {
-                label: 'Rule Name',
+                label: t('Rule Name'),
                 getter: (r: RuleEvaluation) => (
                   <Link
                     routeName={nrcRouteNames.ruleDetail}
@@ -170,7 +172,7 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
                 ),
               },
               {
-                label: 'Enforcement Mode',
+                label: t('Enforcement Mode'),
                 getter: (r: RuleEvaluation) => (
                   <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
                     {r.enforcementMode || 'continuous'}
@@ -178,7 +180,7 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
                 ),
               },
               {
-                label: 'Status',
+                label: t('Status'),
                 getter: (r: RuleEvaluation) => {
                   const isSatisfied = r.ruleStatus === 'Satisfied' || r.status === 'Satisfied';
                   return (
@@ -189,7 +191,7 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
                 },
               },
               {
-                label: 'Taint',
+                label: t('Taint'),
                 getter: (r: RuleEvaluation) => {
                   const isPresent = r.taintStatus === 'Present';
                   const taintDesc = r.taintKey
@@ -197,7 +199,7 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
                     : undefined;
                   return isPresent ? (
                     <Chip
-                      label={taintDesc || 'Taint Present'}
+                      label={taintDesc || t('Taint Present')}
                       size="small"
                       color="warning"
                       variant="outlined"
@@ -212,7 +214,7 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
                 },
               },
               {
-                label: 'Reason',
+                label: t('Reason'),
                 getter: (r: RuleEvaluation) => {
                   const text = r.message || r.reason;
                   if (!text) {
@@ -245,7 +247,7 @@ export default function NodeReadinessExtension({ node }: NodeReadinessExtensionP
               },
             ]}
             data={rules}
-            emptyMessage="No readiness rules currently evaluated for this node."
+            emptyMessage={t('No readiness rules currently evaluated for this node.')}
           />
         </Box>
       </Box>

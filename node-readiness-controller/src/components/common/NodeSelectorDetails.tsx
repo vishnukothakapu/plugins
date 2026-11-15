@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { Box, Chip } from '@mui/material';
 import React from 'react';
 import type { LabelSelectorRequirement, NodeSelector } from '../../resources';
@@ -18,11 +19,12 @@ export interface NodeSelectorDetailsProps {
  * @returns Rendered JSX chip list or fallback indicator when targeting all nodes.
  */
 export default function NodeSelectorDetails({ selector }: NodeSelectorDetailsProps) {
+  const { t } = useTranslation();
   const hasLabels = selector?.matchLabels && Object.keys(selector.matchLabels).length > 0;
   const hasExprs = selector?.matchExpressions && selector.matchExpressions.length > 0;
 
   if (!hasLabels && !hasExprs) {
-    return <>None (Matches all nodes)</>;
+    return <>{t('None (Matches all nodes)')}</>;
   }
 
   return (

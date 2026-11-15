@@ -1,15 +1,15 @@
-import { K8s, Router } from '@kinvolk/headlamp-plugin/lib';
+import { K8s, Router, useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import {
   EmptyContent,
   PageGrid,
   SectionBox,
   StatusLabel,
 } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import { Box, CircularProgress, Link, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { MetricCardsGrid, RulesAttentionSection, StatusHeader } from './components/landing';
 import { CrdNotInstalled } from './components/common';
+import { MetricCardsGrid, RulesAttentionSection, StatusHeader } from './components/landing';
 import { NodeReadinessRule } from './resources';
 import {
   getControllerHealth,
@@ -27,6 +27,7 @@ import {
  * @returns Rendered JSX LandingPage component.
  */
 export default function LandingPage() {
+  const { t } = useTranslation();
   const [rules, rulesError] = NodeReadinessRule.useList();
 
   // 1. Primary controller health check: Query the leader election Lease object
@@ -105,7 +106,7 @@ export default function LandingPage() {
 
     return (
       <PageGrid>
-        <SectionBox title="Node Readiness Controller">
+        <SectionBox title={t('Node Readiness Controller')}>
           <Box mb={2} display="flex" alignItems="center" gap={1.5}>
             <Typography
               variant="body2"
@@ -117,23 +118,27 @@ export default function LandingPage() {
                 fontSize: '0.75rem',
               }}
             >
-              API Status:
+              {t('API Status:')}
             </Typography>
             <StatusLabel status={isForbidden ? 'warning' : 'error'}>
-              {isForbidden ? 'Permission Denied' : 'Not Installed'}
+              {isForbidden ? t('Permission Denied') : t('Not Installed')}
             </StatusLabel>
           </Box>
           <CrdNotInstalled
             isForbidden={isForbidden}
             title={
               isForbidden
-                ? 'Permission Denied: Cannot Read Node Readiness Rules'
-                : 'Node Readiness Controller CRDs not installed'
+                ? t('Permission Denied: Cannot Read Node Readiness Rules')
+                : t('Node Readiness Controller CRDs not installed')
             }
             description={
               isForbidden
-                ? 'Your Kubernetes user or service account lacks read permissions for readiness.node.x-k8s.io/nodereadinessrules.'
-                : 'Please refer to the Node Readiness Controller installation documentation to set up CRDs.'
+                ? t(
+                    'Your Kubernetes user or service account lacks read permissions for readiness.node.x-k8s.io/nodereadinessrules.'
+                  )
+                : t(
+                    'Please refer to the Node Readiness Controller installation documentation to set up CRDs.'
+                  )
             }
           />
         </SectionBox>
@@ -146,7 +151,7 @@ export default function LandingPage() {
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
         <CircularProgress />
         <Typography variant="h6" sx={{ ml: 2, color: 'text.secondary' }}>
-          Loading Node Readiness Rules...
+          {t('Loading Node Readiness Rules...')}
         </Typography>
       </Box>
     );
@@ -209,7 +214,7 @@ export default function LandingPage() {
 
   return (
     <PageGrid>
-      <SectionBox title="Node Readiness Controller">
+      <SectionBox title={t('Node Readiness Controller')}>
         <StatusHeader
           totalRules={totalRules}
           controllerHealth={controllerHealth}

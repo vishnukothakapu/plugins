@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { Box, Card, Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React from 'react';
@@ -29,12 +30,13 @@ export default function RulesAttentionSection({
   rulesNeedingAttention,
   onRuleClick,
 }: RulesAttentionSectionProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
 
   return (
-    <Box mt={4}>
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-        Rules Requiring Attention
+    <Box component="section" aria-labelledby="rules-attention-heading" mt={4}>
+      <Typography id="rules-attention-heading" variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+        {t('Rules Requiring Attention')}
       </Typography>
 
       {totalRules === 0 ? (
@@ -51,10 +53,12 @@ export default function RulesAttentionSection({
             }}
           />
           <Typography variant="h6" sx={{ mt: 1, color: 'text.secondary' }}>
-            No Node Readiness Rules in Cluster
+            {t('No Node Readiness Rules in Cluster')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Deploy NodeReadinessRule resources to begin configuring automated node readiness taints.
+            {t(
+              'Deploy NodeReadinessRule resources to begin configuring automated node readiness taints.'
+            )}
           </Typography>
         </Card>
       ) : rulesNeedingAttention.length === 0 ? (
@@ -67,11 +71,12 @@ export default function RulesAttentionSection({
             style={{ fontSize: '2.5rem', color: theme.palette.success.main, opacity: 0.9 }}
           />
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 1, color: 'text.primary' }}>
-            All Rules Healthy
+            {t('All Rules Healthy')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            No rules currently report controller evaluation errors, active taints, or out-of-sync
-            specifications.
+            {t(
+              'No rules currently report controller evaluation errors, active taints, or out-of-sync specifications.'
+            )}
           </Typography>
         </Card>
       ) : (

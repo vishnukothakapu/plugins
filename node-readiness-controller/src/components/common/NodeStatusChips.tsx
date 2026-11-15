@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { StatusLabel } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box } from '@mui/material';
 import React from 'react';
@@ -29,22 +30,24 @@ export default function NodeStatusChips({
   unsatisfied,
   failed,
 }: NodeStatusChipsProps) {
+  const { t } = useTranslation();
+
   return (
     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
       <StatusLabel status="" sx={{ fontSize: '0.8125rem', py: 0.25 }}>
-        Targeted: {targeted}
+        {`${t('Targeted:')} ${targeted}`}
       </StatusLabel>
       <StatusLabel status="success" sx={{ fontSize: '0.8125rem', py: 0.25 }}>
-        Taint Absent: {satisfied}
+        {`${t('Taint Absent:')} ${satisfied}`}
       </StatusLabel>
       <StatusLabel
         status={Number(unsatisfied) > 0 ? 'warning' : ''}
         sx={{ fontSize: '0.8125rem', py: 0.25 }}
       >
-        Taint Present: {unsatisfied}
+        {`${t('Taint Present:')} ${unsatisfied}`}
       </StatusLabel>
       <StatusLabel status={failed > 0 ? 'error' : ''} sx={{ fontSize: '0.8125rem', py: 0.25 }}>
-        Evaluation Errors: {failed}
+        {`${t('Evaluation Errors:')} ${failed}`}
       </StatusLabel>
     </Box>
   );

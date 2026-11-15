@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { Box, Button, Typography } from '@mui/material';
 import React from 'react';
 
@@ -23,25 +24,28 @@ export default function CrdNotInstalled({
   title,
   description,
 }: CrdNotInstalledProps) {
+  const { t } = useTranslation();
+
   const displayTitle =
     title ||
     (isForbidden
-      ? 'Permission Denied: Cannot Access CRDs'
+      ? t('Permission Denied: Cannot Access CRDs')
       : resourceName
-      ? `${resourceName} CRD Not Installed`
-      : 'Node Readiness Controller CRDs Not Installed');
+      ? t('{{resource}} CRD Not Installed', { resource: resourceName })
+      : t('Node Readiness Controller CRDs Not Installed'));
 
   const displayDescription =
     description ||
     (isForbidden
-      ? `Your Kubernetes user or service account lacks read permissions for ${
-          resourceName
+      ? t('Your Kubernetes user or service account lacks read permissions for {{resource}}.', {
+          resource: resourceName
             ? `readiness.node.x-k8s.io/${resourceName.toLowerCase()}s`
-            : 'Node Readiness resources'
-        }.`
-      : `The CustomResourceDefinition for ${
-          resourceName || 'Node Readiness Controller'
-        } is not installed on this cluster. Please refer to the installation documentation to set up the required CRDs.`);
+            : 'Node Readiness resources',
+        })
+      : t(
+          'The CustomResourceDefinition for {{resource}} is not installed on this cluster. Please refer to the installation documentation to set up the required CRDs.',
+          { resource: resourceName || 'Node Readiness Controller' }
+        ));
 
   return (
     <Box
@@ -96,10 +100,11 @@ export default function CrdNotInstalled({
           href="https://node-readiness-controller.sigs.k8s.io/getting-started/"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label={t('View Installation Guide (opens in new tab)')}
           startIcon={<Icon icon="mdi:book-open-variant" />}
           sx={{ textTransform: 'none', fontWeight: 600, px: 3, py: 1 }}
         >
-          View Installation Guide
+          {t('View Installation Guide')}
         </Button>
       )}
     </Box>

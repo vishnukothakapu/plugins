@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import {
   Link,
   ResourceListView,
@@ -18,6 +19,7 @@ import { CrdNotInstalled } from '../common';
  * @returns Rendered JSX ResourceListView component.
  */
 export default function EvaluationList() {
+  const { t } = useTranslation();
   const [evaluations, evaluationsError] = NodeReadinessEvaluation.useList();
 
   if (evaluationsError) {
@@ -26,7 +28,7 @@ export default function EvaluationList() {
 
     if (isForbidden || isNotFound) {
       return (
-        <SectionBox title="Node Readiness Evaluations">
+        <SectionBox title={t('Node Readiness Evaluations')}>
           <CrdNotInstalled isForbidden={isForbidden} resourceName="NodeReadinessEvaluation" />
         </SectionBox>
       );
@@ -35,7 +37,7 @@ export default function EvaluationList() {
 
   return (
     <ResourceListView
-      title="Node Readiness Evaluations"
+      title={t('Node Readiness Evaluations')}
       data={evaluations}
       errorMessage={
         evaluationsError
@@ -49,7 +51,7 @@ export default function EvaluationList() {
       columns={[
         {
           id: 'name',
-          label: 'Name',
+          label: t('Name'),
           getValue: (evalItem: NodeReadinessEvaluation) => evalItem.metadata?.name || '',
           render: (evalItem: NodeReadinessEvaluation) => {
             const name = evalItem.metadata?.name || '';
@@ -82,7 +84,7 @@ export default function EvaluationList() {
                     params={{ name: targetNode }}
                     aria-label={`View Kubernetes node ${targetNode}`}
                   >
-                    View Node ({targetNode})
+                    {`${t('View Node')} (${targetNode})`}
                   </Link>
                 </Typography>
               </Box>
@@ -91,11 +93,11 @@ export default function EvaluationList() {
         },
         {
           id: 'state',
-          label: 'State',
+          label: t('State'),
           filterVariant: 'select',
           filterSelectOptions: [
-            { label: 'Available', value: 'Available' },
-            { label: 'NotAvailable', value: 'NotAvailable' },
+            { label: t('Available'), value: 'Available' },
+            { label: t('NotAvailable'), value: 'NotAvailable' },
           ],
           getValue: (evalItem: NodeReadinessEvaluation) => evalItem.state || 'Pending',
           render: (evalItem: NodeReadinessEvaluation) => {
@@ -105,11 +107,11 @@ export default function EvaluationList() {
         },
         {
           id: 'rulesStatus',
-          label: 'Rules Status',
+          label: t('Rules Status'),
           filterVariant: 'select',
           filterSelectOptions: [
-            { label: 'OK (All Satisfied)', value: 'OK' },
-            { label: 'Not Ready', value: 'Not Ready' },
+            { label: t('OK (All Satisfied)'), value: 'OK' },
+            { label: t('Not Ready'), value: 'Not Ready' },
           ],
           getValue: (evalItem: NodeReadinessEvaluation) =>
             getEvaluationSummary(evalItem).statusLabel,

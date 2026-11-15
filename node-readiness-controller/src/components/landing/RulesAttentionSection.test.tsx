@@ -7,6 +7,20 @@ import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import RulesAttentionSection from './RulesAttentionSection';
 
+vi.mock('@kinvolk/headlamp-plugin/lib', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, any>) => {
+      if (opts) {
+        return Object.entries(opts).reduce(
+          (acc, [k, v]) => acc.replace(new RegExp(`{{${k}}}`, 'g'), String(v)),
+          key
+        );
+      }
+      return key;
+    },
+  }),
+}));
+
 describe('RulesAttentionSection', () => {
   afterEach(() => {
     cleanup();

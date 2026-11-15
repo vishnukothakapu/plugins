@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import {
   DateLabel,
   Link,
@@ -22,7 +23,8 @@ import EvaluationRuleTable from './EvaluationRuleTable';
  * @returns Array of section name-value pairs for the details grid.
  */
 export function getEvaluationDetailSections(
-  evaluation: NodeReadinessEvaluation | null
+  evaluation: NodeReadinessEvaluation | null,
+  t: (key: string) => string = k => k
 ): RuleDetailSectionItem[] {
   if (!evaluation) return [];
 
@@ -44,19 +46,19 @@ export function getEvaluationDetailSections(
 
   return [
     {
-      name: 'Target Node',
+      name: t('Target Node'),
       value: (
         <Link
           routeName="node"
           params={{ name: nodeName }}
           aria-label={`View target Kubernetes node ${nodeName}`}
         >
-          View Node ({nodeName})
+          {`${t('View Node')} (${nodeName})`}
         </Link>
       ),
     },
     {
-      name: 'Readiness State',
+      name: t('Readiness State'),
       value: (
         <span aria-label={`Readiness State: ${stateInfo.label}`}>
           <StatusLabel status={stateInfo.severity}>{stateInfo.label}</StatusLabel>
@@ -64,7 +66,7 @@ export function getEvaluationDetailSections(
       ),
     },
     {
-      name: 'Rules Progress',
+      name: t('Rules Progress'),
       value: (
         <Box
           sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}
@@ -72,21 +74,21 @@ export function getEvaluationDetailSections(
           aria-label={`Rules progress: ${summary.satisfied} of ${summary.total} satisfied, ${summary.unsatisfied} unsatisfied`}
         >
           <Chip
-            label={`Total: ${summary.total}`}
+            label={`${t('Total:')} ${summary.total}`}
             size="small"
             variant="outlined"
             tabIndex={0}
             aria-label={`Total rules: ${summary.total}`}
           />
           <Chip
-            label={`Satisfied: ${summary.satisfied}`}
+            label={`${t('Satisfied:')} ${summary.satisfied}`}
             size="small"
             color="success"
             tabIndex={0}
             aria-label={`Satisfied rules: ${summary.satisfied}`}
           />
           <Chip
-            label={`Unsatisfied: ${summary.unsatisfied}`}
+            label={`${t('Unsatisfied:')} ${summary.unsatisfied}`}
             size="small"
             color={summary.unsatisfied > 0 ? 'warning' : 'default'}
             tabIndex={0}
@@ -96,7 +98,7 @@ export function getEvaluationDetailSections(
       ),
     },
     {
-      name: 'Active NRC Taints',
+      name: t('Active NRC Taints'),
       value:
         presentTaints.length > 0 ? (
           <Box
@@ -104,23 +106,23 @@ export function getEvaluationDetailSections(
             role="group"
             aria-label="Active NRC taints"
           >
-            {presentTaints.map(t => (
+            {presentTaints.map(taint => (
               <Chip
-                key={t}
-                label={t}
+                key={taint}
+                label={taint}
                 size="small"
                 color="warning"
                 tabIndex={0}
-                aria-label={`Active taint: ${t}`}
+                aria-label={`Active taint: ${taint}`}
               />
             ))}
           </Box>
         ) : (
-          'None'
+          t('None')
         ),
     },
     {
-      name: 'Last Evaluated At',
+      name: t('Last Evaluated At'),
       value: latestEvaluation ? <DateLabel date={latestEvaluation} /> : '—',
     },
   ];
@@ -134,6 +136,7 @@ export function getEvaluationDetailSections(
  * @returns Rendered JSX DetailsGrid component.
  */
 export default function EvaluationDetails() {
+  const { t } = useTranslation();
   const { name } = useParams<{ name: string }>();
 
   return (
@@ -142,7 +145,9 @@ export default function EvaluationDetails() {
       name={name!}
       noDefaultActions
       withEvents
-      extraInfo={getEvaluationDetailSections}
+      extraInfo={(evaluation: NodeReadinessEvaluation | null) =>
+        getEvaluationDetailSections(evaluation, t)
+      }
       extraSections={(evaluation: NodeReadinessEvaluation | null) => {
         if (!evaluation) return [];
         const sections = [

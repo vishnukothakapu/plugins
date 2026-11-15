@@ -7,13 +7,27 @@ import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import EvaluationRuleTable from './EvaluationRuleTable';
 
+vi.mock('@kinvolk/headlamp-plugin/lib', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, any>) => {
+      if (opts) {
+        return Object.entries(opts).reduce(
+          (acc, [k, v]) => acc.replace(new RegExp(`{{${k}}}`, 'g'), String(v)),
+          key
+        );
+      }
+      return key;
+    },
+  }),
+}));
+
 vi.mock('@iconify/react', () => ({
   Icon: ({ icon }: any) => <span data-testid={`icon-${icon}`} />,
 }));
 
 vi.mock('@kinvolk/headlamp-plugin/lib/CommonComponents', () => ({
   Link: ({ children, routeName, params }: any) => (
-    <a data-routename={routeName} data-params={JSON.stringify(params)}>
+    <a href={`#${routeName}`} data-routename={routeName} data-params={JSON.stringify(params)}>
       {children}
     </a>
   ),

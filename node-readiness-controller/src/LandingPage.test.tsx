@@ -42,6 +42,17 @@ vi.mock('@kinvolk/headlamp-plugin/lib', () => ({
   Router: {
     createRouteURL: mockCreateRouteURL,
   },
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, any>) => {
+      if (opts) {
+        return Object.entries(opts).reduce(
+          (acc, [k, v]) => acc.replace(new RegExp(`{{${k}}}`, 'g'), String(v)),
+          key
+        );
+      }
+      return key;
+    },
+  }),
 }));
 
 vi.mock('@kinvolk/headlamp-plugin/lib/CommonComponents', () => ({

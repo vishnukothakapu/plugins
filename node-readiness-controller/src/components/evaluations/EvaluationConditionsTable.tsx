@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import {
   DateLabel,
   SectionBox,
@@ -20,20 +21,22 @@ export interface EvaluationConditionsTableProps {
 export default function EvaluationConditionsTable({
   conditions = [],
 }: EvaluationConditionsTableProps) {
+  const { t } = useTranslation();
+
   if (conditions.length === 0) {
     return null;
   }
 
   return (
-    <SectionBox title="Observation Conditions">
+    <SectionBox title={t('Observation Conditions')}>
       <SimpleTable
         columns={[
           {
-            label: 'Condition',
+            label: t('Condition'),
             getter: (c: NodeReadinessEvaluationCondition) => c.type,
           },
           {
-            label: 'Status',
+            label: t('Status'),
             getter: (c: NodeReadinessEvaluationCondition) => {
               const statusSeverity =
                 c.status === 'True' ? 'success' : c.status === 'False' ? 'error' : 'warning';
@@ -41,11 +44,11 @@ export default function EvaluationConditionsTable({
             },
           },
           {
-            label: 'Reason',
+            label: t('Reason'),
             getter: (c: NodeReadinessEvaluationCondition) => c.reason || '—',
           },
           {
-            label: 'Message',
+            label: t('Message'),
             getter: (c: NodeReadinessEvaluationCondition) => (
               <Typography variant="body2" color="text.secondary">
                 {c.message || '—'}
@@ -53,7 +56,7 @@ export default function EvaluationConditionsTable({
             ),
           },
           {
-            label: 'Last Transition',
+            label: t('Last Transition'),
             getter: (c: NodeReadinessEvaluationCondition) =>
               c.lastTransitionTime ? (
                 <DateLabel date={c.lastTransitionTime} />
@@ -65,7 +68,7 @@ export default function EvaluationConditionsTable({
           },
         ]}
         data={conditions}
-        emptyMessage="No conditions recorded."
+        emptyMessage={t('No conditions recorded.')}
       />
     </SectionBox>
   );

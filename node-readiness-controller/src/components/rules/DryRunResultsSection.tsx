@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { Box, Chip, Typography } from '@mui/material';
 import React from 'react';
 import type { DryRunResults } from '../../resources';
@@ -20,8 +21,10 @@ export interface DryRunResultsSectionProps {
  * @returns Rendered JSX simulation summary box or fallback pending indicator.
  */
 export default function DryRunResultsSection({ results, failed = 0 }: DryRunResultsSectionProps) {
+  const { t } = useTranslation();
+
   if (!results) {
-    return <>Pending simulation</>;
+    return <>{t('Pending simulation')}</>;
   }
 
   return (
@@ -33,22 +36,28 @@ export default function DryRunResultsSection({ results, failed = 0 }: DryRunResu
       )}
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
         <Chip
-          label={`Affected Nodes: ${results.affectedNodes || 0}`}
+          label={`${t('Affected Nodes:')} ${results.affectedNodes || 0}`}
           size="small"
           color="primary"
         />
-        <Chip label={`Taints To Add: ${results.taintsToAdd || 0}`} size="small" color="warning" />
         <Chip
-          label={`Taints To Remove: ${results.taintsToRemove || 0}`}
+          label={`${t('Taints To Add:')} ${results.taintsToAdd || 0}`}
+          size="small"
+          color="warning"
+        />
+        <Chip
+          label={`${t('Taints To Remove:')} ${results.taintsToRemove || 0}`}
           size="small"
           color="success"
         />
         <Chip
-          label={`Risky Operations: ${results.riskyOperations || 0}`}
+          label={`${t('Risky Operations:')} ${results.riskyOperations || 0}`}
           size="small"
           color="error"
         />
-        {failed > 0 && <Chip label={`Evaluation Errors: ${failed}`} size="small" color="error" />}
+        {failed > 0 && (
+          <Chip label={`${t('Evaluation Errors:')} ${failed}`} size="small" color="error" />
+        )}
       </Box>
     </Box>
   );

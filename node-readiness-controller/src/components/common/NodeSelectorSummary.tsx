@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { Box, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import type { NodeSelector } from '../../resources';
@@ -44,6 +45,7 @@ export function getNodeSelectorSummaryText(selector?: NodeSelector): string {
  * @returns Rendered JSX element with tooltip.
  */
 export default function NodeSelectorSummary({ selector }: NodeSelectorSummaryProps) {
+  const { t } = useTranslation();
   const labels = selector?.matchLabels;
   const exprs = selector?.matchExpressions;
 
@@ -51,7 +53,7 @@ export default function NodeSelectorSummary({ selector }: NodeSelectorSummaryPro
     return (
       <Box sx={{ minWidth: '70px' }}>
         <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-          All Nodes
+          {t('All Nodes')}
         </Typography>
       </Box>
     );
@@ -65,6 +67,7 @@ export default function NodeSelectorSummary({ selector }: NodeSelectorSummaryPro
       <Tooltip title={<pre style={{ margin: 0, fontSize: '0.75rem' }}>{tooltipText}</pre>}>
         <Typography
           tabIndex={0}
+          aria-label={`Node selector: ${displayText}`}
           variant="body2"
           sx={{
             cursor: 'help',

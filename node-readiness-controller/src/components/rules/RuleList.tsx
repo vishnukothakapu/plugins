@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import {
   CreateResourceButton,
   Link,
@@ -25,6 +26,7 @@ import {
  * @returns Rendered JSX ResourceListView component.
  */
 export default function RuleList() {
+  const { t } = useTranslation();
   const [rules, rulesError] = NodeReadinessRule.useList();
 
   if (rulesError) {
@@ -33,7 +35,7 @@ export default function RuleList() {
 
     if (isForbidden || isNotFound) {
       return (
-        <SectionBox title="Node Readiness Rules">
+        <SectionBox title={t('Node Readiness Rules')}>
           <CrdNotInstalled isForbidden={isForbidden} resourceName="NodeReadinessRule" />
         </SectionBox>
       );
@@ -42,7 +44,7 @@ export default function RuleList() {
 
   return (
     <ResourceListView
-      title="Node Readiness Rules"
+      title={t('Node Readiness Rules')}
       data={rules}
       errorMessage={rulesError ? String(rulesError?.message || rulesError) : undefined}
       id="nrc-readiness-rules"
@@ -56,7 +58,7 @@ export default function RuleList() {
       columns={[
         {
           id: 'name',
-          label: 'Name',
+          label: t('Name'),
           getValue: (rule: NodeReadinessRule) => rule.getName(),
           render: (rule: NodeReadinessRule) => {
             const isDryRun = rule.isDryRun;
@@ -81,7 +83,7 @@ export default function RuleList() {
                 </Tooltip>
                 {isDryRun && (
                   <Chip
-                    label="Dry Run"
+                    label={t('Dry Run')}
                     size="small"
                     color="default"
                     sx={{ height: 18, fontSize: '0.65rem', mt: 0.5 }}
@@ -93,11 +95,11 @@ export default function RuleList() {
         },
         {
           id: 'enforcement',
-          label: 'Enforcement',
+          label: t('Enforcement'),
           filterVariant: 'multi-select',
           filterSelectOptions: [
-            { label: 'continuous', value: 'continuous' },
-            { label: 'bootstrap-only', value: 'bootstrap-only' },
+            { label: t('continuous'), value: 'continuous' },
+            { label: t('bootstrap-only'), value: 'bootstrap-only' },
           ],
           getValue: (rule: NodeReadinessRule) => `${rule.enforcementMode} ${rule.conditionPolicy}`,
           render: (rule: NodeReadinessRule) => {
@@ -121,7 +123,7 @@ export default function RuleList() {
                     color="text.secondary"
                     sx={{ whiteSpace: 'nowrap' }}
                   >
-                    Policy: anyOf
+                    {t('Policy: anyOf')}
                   </Typography>
                 )}
               </Box>
@@ -130,14 +132,14 @@ export default function RuleList() {
         },
         {
           id: 'status',
-          label: 'Status',
+          label: t('Status'),
           filterVariant: 'multi-select',
           filterSelectOptions: [
-            { label: 'OK', value: 'OK' },
-            { label: 'Pending', value: 'Pending' },
-            { label: 'Dry Run', value: 'Dry Run' },
-            { label: 'Failed', value: 'Failed' },
-            { label: 'Terminating', value: 'Terminating' },
+            { label: t('OK'), value: 'OK' },
+            { label: t('Pending'), value: 'Pending' },
+            { label: t('Dry Run'), value: 'Dry Run' },
+            { label: t('Failed'), value: 'Failed' },
+            { label: t('Terminating'), value: 'Terminating' },
           ],
           getValue: (rule: NodeReadinessRule) => getRuleStatusInfo(rule).status,
           render: (rule: NodeReadinessRule) => {
@@ -147,7 +149,7 @@ export default function RuleList() {
         },
         {
           id: 'satisfied',
-          label: 'Satisfied Nodes',
+          label: t('Satisfied Nodes'),
           getValue: (rule: NodeReadinessRule) => {
             const stats = getRuleStats(rule);
             if (stats.isDryRun) return 'N/A';
@@ -179,7 +181,10 @@ export default function RuleList() {
             return (
               <Box sx={{ minWidth: '80px', textAlign: 'center' }}>
                 <Tooltip
-                  title={`${stats.satisfied} out of ${stats.targeted} nodes satisfying this rule`}
+                  title={t('{{satisfied}} out of {{targeted}} nodes satisfying this rule', {
+                    satisfied: stats.satisfied,
+                    targeted: stats.targeted,
+                  })}
                 >
                   <Typography
                     variant="body2"
@@ -201,7 +206,7 @@ export default function RuleList() {
         },
         {
           id: 'unsatisfied',
-          label: 'Taints Present',
+          label: t('Taints Present'),
           getValue: (rule: NodeReadinessRule) => getRuleStats(rule).unsatisfied,
           render: (rule: NodeReadinessRule) => {
             const val = getRuleStats(rule).unsatisfied;
@@ -226,7 +231,7 @@ export default function RuleList() {
         },
         {
           id: 'failedNodes',
-          label: 'Evaluation Errors',
+          label: t('Evaluation Errors'),
           getValue: (rule: NodeReadinessRule) => getRuleStats(rule).failed,
           render: (rule: NodeReadinessRule) => {
             const val = getRuleStats(rule).failed;
@@ -245,7 +250,7 @@ export default function RuleList() {
         },
         {
           id: 'nodeSelector',
-          label: 'Selector',
+          label: t('Selector'),
           getValue: (rule: NodeReadinessRule) =>
             getNodeSelectorSummaryText(rule.spec?.nodeSelector),
           render: (rule: NodeReadinessRule) => (
@@ -254,7 +259,7 @@ export default function RuleList() {
         },
         {
           id: 'taint',
-          label: 'Taint',
+          label: t('Taint'),
           getValue: (rule: NodeReadinessRule) => formatTaint(rule.spec?.taint),
           render: (rule: NodeReadinessRule) => <TaintChip taint={rule.spec?.taint} />,
         },

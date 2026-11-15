@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { Box, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import type { NodeReadinessTaint } from '../../resources';
@@ -30,10 +31,12 @@ export function formatTaint(taint?: NodeReadinessTaint): string {
  * @returns Rendered JSX element with tooltip.
  */
 export default function TaintChip({ taint }: TaintChipProps) {
+  const { t } = useTranslation();
+
   if (!taint) {
     return (
       <Typography variant="body2" color="text.secondary">
-        None
+        {t('None')}
       </Typography>
     );
   }
@@ -45,6 +48,7 @@ export default function TaintChip({ taint }: TaintChipProps) {
       <Tooltip title={fullText}>
         <Typography
           tabIndex={0}
+          aria-label={`Taint: ${fullText}`}
           variant="body2"
           sx={{
             whiteSpace: 'nowrap',

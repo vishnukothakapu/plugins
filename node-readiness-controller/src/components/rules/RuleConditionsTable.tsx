@@ -1,3 +1,4 @@
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { SectionBox, SimpleTable } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import React from 'react';
 import type { ConditionRequirement } from '../../resources';
@@ -18,22 +19,24 @@ export interface RuleConditionsTableProps {
  * @returns Rendered SectionBox wrapping the conditions table.
  */
 export default function RuleConditionsTable({ conditions = [] }: RuleConditionsTableProps) {
+  const { t } = useTranslation();
+
   return (
-    <SectionBox title="Conditions to Evaluate">
+    <SectionBox title={t('Conditions to Evaluate')}>
       <SimpleTable
         columns={[
-          { label: 'Condition Type', getter: (c: ConditionRequirement) => c.type },
+          { label: t('Condition Type'), getter: (c: ConditionRequirement) => c.type },
           {
-            label: 'Required Status',
+            label: t('Required Status'),
             getter: (c: ConditionRequirement) => c.requiredStatus,
           },
           {
-            label: 'Default Status',
+            label: t('Default Status'),
             getter: (c: ConditionRequirement) => c.defaultStatus || 'Unknown',
           },
         ]}
         data={conditions}
-        emptyMessage="No conditions defined."
+        emptyMessage={t('No conditions defined.')}
       />
     </SectionBox>
   );

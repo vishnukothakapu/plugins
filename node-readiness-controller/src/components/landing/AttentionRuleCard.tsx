@@ -1,4 +1,5 @@
 import { Icon } from '@iconify/react';
+import { useTranslation } from '@kinvolk/headlamp-plugin/lib';
 import { Box, Card, CardContent, Chip, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React from 'react';
@@ -33,6 +34,7 @@ export default function AttentionRuleCard({
   isPendingSync,
   onClick,
 }: AttentionRuleCardProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const hasFailed = failedCount > 0;
 
@@ -42,11 +44,36 @@ export default function AttentionRuleCard({
     ? theme.palette.warning.main
     : theme.palette.info.main;
 
+  const issuesSummary: string[] = [];
+  if (hasFailed) {
+    issuesSummary.push(
+      `${failedCount} ${failedCount > 1 ? t('node evaluation errors') : t('node evaluation error')}`
+    );
+  }
+  if (taintsPresent > 0) {
+    issuesSummary.push(
+      `${taintsPresent} ${
+        taintsPresent > 1 ? t('nodes with taint present') : t('node with taint present')
+      }`
+    );
+  }
+  if (isReconciling) {
+    issuesSummary.push(
+      isPendingSync ? t('Pending controller sync') : t('Spec modified (pending sync)')
+    );
+  }
+
+  const dryRunLabel = t('Dry Run');
+  const cardAriaLabel = `${name}${isDryRun ? ` (${dryRunLabel})` : ''}: ${issuesSummary.join(
+    ', '
+  )}`;
+
   return (
     <Card
       elevation={0}
       role="button"
       tabIndex={0}
+      aria-label={cardAriaLabel}
       sx={{
         width: '100%',
         display: 'flex',
@@ -102,7 +129,7 @@ export default function AttentionRuleCard({
           </Tooltip>
           {isDryRun && (
             <Chip
-              label="Dry Run"
+              label={dryRunLabel}
               size="small"
               color="default"
               variant="outlined"
@@ -126,7 +153,8 @@ export default function AttentionRuleCard({
                 />
               </Box>
               <Typography variant="body2" color="error.main" sx={{ fontWeight: 500 }}>
-                {failedCount} node evaluation error{failedCount > 1 ? 's' : ''}
+                {failedCount}{' '}
+                {failedCount > 1 ? t('node evaluation errors') : t('node evaluation error')}
               </Typography>
             </Box>
           )}
@@ -144,7 +172,8 @@ export default function AttentionRuleCard({
                 />
               </Box>
               <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500 }}>
-                {taintsPresent} node{taintsPresent > 1 ? 's' : ''} with taint present
+                {taintsPresent}{' '}
+                {taintsPresent > 1 ? t('nodes with taint present') : t('node with taint present')}
               </Typography>
             </Box>
           )}
@@ -162,7 +191,7 @@ export default function AttentionRuleCard({
                 />
               </Box>
               <Typography variant="body2" color="info.main" sx={{ fontWeight: 500 }}>
-                {isPendingSync ? 'Pending controller sync' : 'Spec modified (pending sync)'}
+                {isPendingSync ? t('Pending controller sync') : t('Spec modified (pending sync)')}
               </Typography>
             </Box>
           )}
